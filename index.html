@@ -1,0 +1,1645 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="icon" href="favicon.ico" />
+    <link rel="manifest" href="webapp_manifest.json" />
+    <link rel="stylesheet" href="css/espruino.css" />
+    <script>
+      // Force HTTPS - needed for web bluetooth
+      var l = window.location.toString();
+      if (l.substr(0, 7) == "http://" && !window.location.port)
+        window.location = "https://" + l.substr(7);
+    </script>
+
+    <title>Impulse Button Hardware reset</title>
+    <style type="text/css">
+      .jqstooltip {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        visibility: hidden;
+        background: rgb(0, 0, 0) transparent;
+        background-color: rgba(0, 0, 0, 0.6);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#99000000, endColorstr=#99000000);
+        -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#99000000, endColorstr=#99000000)";
+        color: white;
+        font: 10px arial, san serif;
+        text-align: left;
+        white-space: nowrap;
+        padding: 5px;
+        border: 1px solid white;
+        z-index: 10000;
+      }
+      .jqsfield {
+        color: white;
+        font: 10px arial, san serif;
+        text-align: left;
+      }
+    </style>
+    <style id="motion-extension-style">
+      @media print {
+        .no-print,
+        .no-print * {
+          display: none !important;
+        }
+      }
+      #motion-intervention-iframe {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: auto !important;
+        min-height: auto !important;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        top: 0;
+        align-items: center;
+        justify-items: center;
+        z-index: 2147483646;
+      }
+      .motion-no-overflow {
+        overflow: hidden !important;
+      }
+      .motion-iframe {
+        z-index: 2147483646;
+        left: inherit;
+        display: flex !important;
+      }
+      .motion-extension-div,
+      .motion-iframe {
+        border: none;
+        background-color: transparent;
+      }
+      .motion-extension-div {
+        padding: 0;
+        margin: 0;
+        max-width: none !important;
+        min-width: 0 !important;
+        width: auto;
+        max-height: none !important;
+        min-height: 0 !important;
+        height: auto;
+        box-shadow: none;
+        visibility: visible !important;
+      }
+      #motion-sidebar-iframe-container {
+        overflow: visible;
+        position: fixed;
+        z-index: 2147483646;
+      }
+      .motion-sidebar-calendar {
+        height: 46px !important;
+        width: 40px !important;
+        top: 170px;
+        right: 0;
+      }
+      .motion-sidebar-calendar-hover,
+      .motion-sidebar-full-hover {
+        height: 207px !important;
+        width: 40px !important;
+        top: 170px;
+        right: 0;
+      }
+      iframe.motion-sidebar-calendar {
+        height: 47px !important;
+      }
+      iframe.motion-sidebar-calendar,
+      iframe.motion-sidebar-calendar-hover {
+        width: 40px !important;
+        min-width: auto !important;
+        box-shadow: 0 1px 5px 0 #696969;
+      }
+      iframe.motion-sidebar-calendar-hover {
+        height: 207px !important;
+      }
+      iframe.motion-sidebar-calendar-alert-hover {
+        height: 229px !important;
+      }
+      iframe.motion-sidebar-calendar-alert-hover,
+      iframe.motion-sidebar-full-hover {
+        width: 40px !important;
+        min-width: auto !important;
+        box-shadow: 0 1px 5px 0 #696969;
+      }
+      iframe.motion-sidebar-full-hover {
+        height: 207px !important;
+      }
+      iframe.motion-sidebar-full-alert-hover {
+        width: 40px !important;
+        height: 229px !important;
+        min-width: auto !important;
+        box-shadow: 0 1px 5px 0 #696969;
+        top: 170px;
+        right: 0;
+      }
+      .motion-sidebar {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+      .motion-sidebar-dragging {
+        right: 0 !important;
+        -webkit-transform: none !important;
+        transform: none !important;
+      }
+      #motion-sidebar-iframe {
+        overflow: auto;
+        top: 0;
+        right: 0;
+        z-index: 0;
+        border-radius: 0.3rem 0 0 0.3rem;
+      }
+      #motion-account-iframe {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: auto !important;
+        min-height: auto !important;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        top: 0;
+        align-items: center;
+        justify-items: center;
+        border: none !important;
+      }
+      .motion-no-pointer-events {
+        pointer-events: none !important;
+      }
+      .ant-select-dropdown {
+        z-index: 100000 !important;
+      }
+      #motion-calendar-minimized-iframe {
+        width: 210px !important;
+        height: 60px !important;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        border-radius: 4px;
+      }
+      #motion-dropdown-iframe {
+        right: 0 !important;
+        width: 180px !important;
+        border-radius: 8px 0 0 8px;
+        background-color: #000;
+      }
+      #motion-dropdown-iframe,
+      #motion-widget-tooltip-iframe {
+        overflow: visible;
+        position: fixed;
+        z-index: 2147483646;
+        top: 0;
+        height: 0;
+        min-width: auto !important;
+        min-height: auto !important;
+        box-shadow: 0 1px 5px 0 #696969;
+      }
+      #motion-widget-tooltip-iframe {
+        right: 45px !important;
+        width: 200px !important;
+        border-radius: 4px;
+        background-color: #272728;
+      }
+      #motion-widget-warning-iframe {
+        overflow: visible;
+        position: fixed;
+        z-index: 2147483646;
+        right: 30px !important;
+        top: 0;
+        width: 17px !important;
+        height: 17px !important;
+        min-width: auto !important;
+        min-height: auto !important;
+        box-shadow: 0 1px 5px 0 #696969;
+        border-radius: 50%;
+      }
+      #motion-auth-iframe,
+      #motion-availability-popup-iframe,
+      #motion-browser-icon-modal-iframe,
+      #motion-consolidate-tab-modal-iframe,
+      #motion-edit-schedule-modal-iframe,
+      #motion-email-signatures-iframe,
+      #motion-hide-widget-modal-iframe,
+      #motion-intervention-snooze-modal-iframe,
+      #motion-onboard-iframe,
+      #motion-schedule-tab-modal-iframe,
+      #motion-shortcut-modal-iframe,
+      #motion-task-board-modal-iframe,
+      #motion-upgrade-iframe {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: auto !important;
+        min-height: auto !important;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        top: 0;
+        align-items: center;
+        justify-items: center;
+      }
+      #motiontab-availability-popup-iframe,
+      #motiontab-availability-popup-iframe-new,
+      #motiontab-availability-popup-iframe-webapp,
+      #motiontab-edit-schedule-modal-iframe,
+      #motiontab-task-modal-iframe,
+      #motiontab-task-modal-iframe-new,
+      #motiontab-task-modal-iframe-webapp {
+        height: calc(100% - 60px);
+        width: 100%;
+        min-width: auto !important;
+        min-height: auto !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        align-items: center;
+        justify-items: center;
+      }
+      #motiontab-availability-popup-iframe-webapp,
+      #motiontab-task-modal-iframe-webapp {
+        z-index: 0;
+      }
+      .iframe-with-banner {
+        height: calc(100% - 110px) !important;
+      }
+      #motiontab-consolidate-tab-modal-iframe {
+        width: calc(100% - 100px);
+        height: 100%;
+        min-width: auto !important;
+        min-height: auto !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        align-items: center;
+        justify-items: center;
+      }
+      #motion-browser-icon-modal-iframe {
+        z-index: 1000;
+      }
+      #motion-command-iframe,
+      #motion-snippet-iframe,
+      #motion-task-input-iframe,
+      #motion-timezone-iframe {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: auto !important;
+        min-height: auto !important;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        top: 0;
+        align-items: center;
+        justify-items: center;
+      }
+      #motion-email-iframe-container {
+        overflow: visible;
+        position: fixed;
+        z-index: 2147483646;
+        top: calc(100% - 450px);
+        left: calc(100% - 804px);
+      }
+      #motion-email-iframe {
+        resize: both;
+        overflow: auto;
+        top: 0;
+        width: 544px;
+        height: 450px;
+        min-width: 270px !important;
+        min-height: 270px !important;
+        box-shadow: 0 6px 15px 0 rgba(0, 0, 0, 0.1),
+          0 16px 2rem rgba(0, 0, 0, 0.05), 0 0 0.5px rgba(0, 0, 0, 0.1);
+        border-radius: 6px;
+        background-color: #202020;
+      }
+      #motion-calendar-iframe-container {
+        bottom: 0;
+        right: 0;
+      }
+      #motion-calendar-iframe-container,
+      #motiontab-calendar-iframe-container-new {
+        overflow: visible;
+        position: fixed;
+        z-index: 2147483646;
+        background-color: #1d1d1d;
+      }
+      #motiontab-calendar-iframe-container-new {
+        top: 60px;
+        left: 0;
+      }
+      #motiontab-calendar-iframe-container-webapp {
+        overflow: visible;
+        position: fixed;
+        z-index: 0;
+        left: 0;
+        background-color: #1d1d1d;
+      }
+      .motion-calendar-iframe-container-minimized {
+        width: 210px !important;
+        height: 60px !important;
+        top: calc(100% - 80px) !important;
+        right: 20px !important;
+        overflow: hidden !important;
+        transition: 0.4s;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        z-index: -100 !important;
+        pointer-events: none;
+      }
+      #motion-calendar-iframe {
+        overflow: auto;
+        top: 0;
+        width: 375px;
+        height: 100vh !important;
+        min-width: 20vw;
+        min-height: 100vh !important;
+        max-width: 100vw !important;
+        box-shadow: 0 0 10px 0 #000;
+        background-color: #1d1d1d;
+      }
+      #motiontab-calendar-iframe {
+        overflow: auto;
+        height: calc(100vh - 60px);
+        background-color: #1d1d1d;
+      }
+      #motion-notification-iframe {
+        position: fixed;
+        bottom: 50px;
+        left: -400px;
+        transition: left 0.3s;
+        z-index: 2147483647;
+        overflow: auto;
+        border-radius: 4px;
+        width: 350px;
+        height: 150px;
+        min-width: auto !important;
+        min-height: auto !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.93);
+      }
+      .motion-notification-transition {
+        left: 25px !important;
+        transition: left 0.3s;
+      }
+      .motion-calendar-reminder {
+        height: 70px !important;
+      }
+      .motion-calendar-reminder,
+      .motion-calendar-reminder-note {
+        width: 410px;
+        min-width: auto !important;
+        min-height: auto !important;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.93);
+      }
+      .motion-calendar-reminder-note {
+        height: 180px !important;
+      }
+      #motion-calendar-reminder-iframe {
+        border-radius: 4px 0 0 4px;
+        position: fixed;
+        top: 20px;
+        right: -410px;
+        transition: right 1s;
+        z-index: 2147483646;
+      }
+      #motion-calendar-reminder-template-iframe-container {
+        top: 95px;
+        right: 100px;
+        width: 220px !important;
+        height: 160px;
+      }
+      #motion-calendar-reminder-template-iframe-container,
+      #motion-task-snooze-modal-iframe-container {
+        overflow: hidden;
+        position: fixed;
+        z-index: 2147483646;
+        min-width: auto !important;
+        min-height: auto !important;
+        box-shadow: 0 1px 5px 0 #696969;
+        border-radius: 6px;
+      }
+      #motion-task-snooze-modal-iframe-container {
+        top: 80px;
+        right: 50px;
+        width: 230px !important;
+        height: 80px !important;
+      }
+      .motion-calendar-reminder-transition {
+        right: 0 !important;
+        transition: right 1s;
+      }
+      #motion-calendar-event-iframe {
+        position: fixed;
+        top: -600px;
+        right: -600px;
+        height: 350px;
+        width: 410px;
+        border-radius: 6px;
+        box-shadow: 0 0 10px 0 #000;
+      }
+      .motion-gmail-date {
+        border-bottom: 2px solid #2c77e6;
+        cursor: pointer;
+      }
+      .motion-sidebar-distracting,
+      .motion-sidebar-general {
+        height: 54px !important;
+        min-height: auto !important;
+        top: 170px;
+        right: 0;
+      }
+      iframe.motion-sidebar-general {
+        width: 54px !important;
+        min-width: auto !important;
+        box-shadow: 0 1px 5px 0 #696969;
+      }
+      iframe.motion-sidebar-distracting {
+        width: 160px !important;
+        min-width: auto !important;
+        box-shadow: 0 1px 5px 0 #696969;
+      }
+      .motion-focus-banner {
+        width: 180px !important;
+        height: 92px !important;
+        min-width: auto !important;
+        min-height: auto !important;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.93);
+        background-color: #272728;
+      }
+      #motion-focus-banner-iframe {
+        border-radius: 8px;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 2147483646;
+        overflow: hidden;
+      }
+      #motion-flexible-sidebar-iframe-container {
+        overflow: visible;
+        position: fixed;
+        z-index: 2147483646;
+        bottom: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+      #motion-flexible-sidebar-iframe {
+        overflow: auto;
+        top: 0;
+        width: 100vw;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        max-width: 100vw !important;
+        background-color: transparent;
+      }
+      .motion-generic-notification {
+        background-color: #474747 !important;
+        width: -webkit-fit-content !important;
+        width: -moz-fit-content !important;
+        width: fit-content !important;
+      }
+      .motion-generic-notification .ant-notification-notice-close,
+      .motion-generic-notification .ant-notification-notice-description,
+      .motion-generic-notification .ant-notification-notice-message {
+        color: #d9d9d9 !important;
+        margin-bottom: 0 !important;
+      }
+      .ant-notification {
+        box-sizing: border-box;
+        margin: 0 24px 0 0;
+        padding: 0;
+        color: rgba(0, 0, 0, 0.8509803921568627);
+        font-size: 14px;
+        font-variant: tabular-nums;
+        line-height: 1.5715;
+        list-style: none;
+        -webkit-font-feature-settings: "tnum", "tnum";
+        font-feature-settings: "tnum", "tnum";
+        position: fixed;
+        z-index: 2147483646;
+      }
+      .ant-notification-notice {
+        position: relative;
+        width: 384px;
+        max-width: calc(100vw - 48px);
+        margin-bottom: 16px;
+        margin-left: auto;
+        padding: 16px 24px;
+        overflow: hidden;
+        line-height: 1.5715;
+        word-wrap: break-word;
+        background: #fff;
+        border-radius: 2px;
+        box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12156862745098039),
+          0 6px 16px rgba(0, 0, 0, 0.0784313725490196),
+          0 9px 28px 8px rgba(0, 0, 0, 0.050980392156862744);
+      }
+      .ant-notification-bottomLeft .ant-notification-notice,
+      .ant-notification-topLeft .ant-notification-notice {
+        margin-right: auto;
+        margin-left: 0;
+      }
+      .ant-notification-bottomLeft,
+      .ant-notification-topLeft {
+        margin-right: 0;
+        margin-left: 24px;
+      }
+      .ant-notification-bottomRight,
+      .ant-notification-topRight {
+        margin-right: 24px;
+        margin-left: 0;
+      }
+      .ant-notification-notice-close {
+        position: absolute;
+        top: 16px;
+        right: 22px;
+        color: rgba(0, 0, 0, 0.45098039215686275);
+        outline: none;
+      }
+    </style>
+    <style type="text/css">
+      @font-face {
+        font-weight: 400;
+        font-style: normal;
+        font-family: "Circular-Loom";
+
+        src: url("chrome-extension://liecbddmkiiihnedobmlmillhodjkdmb/fonts/CircularXXWeb-Book.woff2")
+          format("woff2");
+      }
+
+      @font-face {
+        font-weight: 500;
+        font-style: normal;
+        font-family: "Circular-Loom";
+
+        src: url("chrome-extension://liecbddmkiiihnedobmlmillhodjkdmb/fonts/CircularXXWeb-Medium.woff2")
+          format("woff2");
+      }
+
+      @font-face {
+        font-weight: 700;
+        font-style: normal;
+        font-family: "Circular-Loom";
+
+        src: url("chrome-extension://liecbddmkiiihnedobmlmillhodjkdmb/fonts/CircularXXWeb-Bold.woff2")
+          format("woff2");
+      }
+
+      @font-face {
+        font-weight: 900;
+        font-style: normal;
+        font-family: "Circular-Loom";
+
+        src: url("chrome-extension://liecbddmkiiihnedobmlmillhodjkdmb/fonts/CircularXXWeb-Black.woff2")
+          format("woff2");
+      }
+    </style>
+  </head>
+  <body style="">
+    <div class="window">
+      <!-- Title Bar -->
+
+      <!-- Viewport -->
+      <div class="window__viewport">
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <div class="h-split">
+            <div class="h-split__left toolbar__buttons toolbar__buttons--left">
+              <a
+                id="icon-connection"
+                class="icon-connect lrg"
+                title="Connect / Disconnect"
+                data-icon-order="-1000"
+              ></a>
+            </div>
+            <div
+              class="h-split__right toolbar__buttons toolbar__buttons--right"
+            >
+              <a
+                id="icon-settings"
+                class="icon-settings lrg"
+                title="Settings"
+                data-icon-order="-100"
+              ></a
+              ><a
+                id="icon-help"
+                class="icon-help lrg"
+                title="Help"
+                data-icon-order="-95"
+                ><div class="menu">
+                  <a id="menu-tour" title="Tour" data-icon-order="2"
+                    ><i class="icon-compass sml"></i>Tour</a
+                  ><a id="menu-tutorial" title="Tutorial" data-icon-order="100"
+                    ><i class="icon-help sml"></i>Tutorial</a
+                  ><a id="menu-forum" title="Forum" data-icon-order="100"
+                    ><i class="icon-chat sml"></i>Forum</a
+                  ><a
+                    id="menu-troubleshooting"
+                    title="Troubleshooting"
+                    data-icon-order="100"
+                    ><i class="icon-book sml"></i>Troubleshooting</a
+                  >
+                </div></a
+              ><a
+                id="icon-orientation"
+                class="icon-split-vertical lrg icon--divide-right"
+                title="Toggle Orientation"
+                data-icon-order="-80"
+              ></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Splitter -->
+        <div class="split-pane splitster splitster--vertical">
+          <div
+            class="split-pane__left splitster__pane"
+            style="width: 756px; height: 100%; top: 0px; left: 0px"
+          >
+            <div class="split-pane__loading">LOADING ...</div>
+
+            <div class="editor editor--terminal">
+              <div class="sidebar editor__sidebar">
+                <div class="v-split">
+                  <div
+                    class="v-split__top sidebar__buttons sidebar__buttons--top"
+                  >
+                    <a
+                      id="icon-clearScreen"
+                      class="icon-clear lrg"
+                      title="Clear Screen"
+                      data-icon-order="-100"
+                    ></a>
+                  </div>
+                  <div
+                    class="v-split__bottom sidebar__buttons sidebar__buttons--bottom"
+                  ></div>
+                </div>
+              </div>
+              <div class="canvas editor__canvas editor__canvas__terminal">
+                <div id="terminal" class="terminal" style="font-size: 12px">
+                  <div style="max-width: 400px; margin: auto">
+                    <p>
+                      <a href="http://www.espruino.com/Web+IDE" target="_blank"
+                        ><img
+                          src="img/ide_logo.png"
+                          width="299"
+                          height="96"
+                          alt="Espruino IDE"
+                      /></a>
+                    </p>
+                    <p id="versioninfo" style="text-align: right">
+                      Web App, v0.76.4
+                    </p>
+                    <p style="text-align: center; font-weight: bold">
+                      A Code Editor and Terminal for
+                      <a href="http://www.espruino.com" target="_blank"
+                        >Espruino JavaScript Microcontrollers</a
+                      >
+                    </p>
+                    <p>
+                      Try the <a class="tour_link" href="#">guided tour</a> and
+                      <a
+                        href="http://www.espruino.com/Quick+Start"
+                        target="_blank"
+                        >getting started</a
+                      >
+                      guide for more information, tutorials and example
+                      projects.
+                    </p>
+                    <div id="terminalnews">
+                      <h2>Recent News</h2>
+                      <ul>
+                        <li>
+                          <a
+                            href="http://forum.espruino.com/conversations/381600"
+                            target="_blank"
+                            >Espruino 2v16 released</a
+                          ><span style="float: right">17 Nov</span>
+                        </li>
+                        <li>
+                          <a
+                            href="http://forum.espruino.com/conversations/374646"
+                            target="_blank"
+                            >Espruino 2v13 released</a
+                          ><span style="float: right">6 Apr</span>
+                        </li>
+                        <li>
+                          <a
+                            href="http://forum.espruino.com/conversations/371047"
+                            target="_blank"
+                            >Happy Holidays 2021! Out of office</a
+                          ><span style="float: right">17 Dec</span>
+                        </li>
+                        <li>
+                          <a
+                            href="http://forum.espruino.com/conversations/368153"
+                            target="_blank"
+                            >Bangle.js 2 now on KickStarter</a
+                          ><span style="float: right">22 Sept</span>
+                        </li>
+                        <li>
+                          <a
+                            href="http://forum.espruino.com/conversations/366782"
+                            target="_blank"
+                            >Espruino 2v10</a
+                          ><span style="float: right">13 Aug</span>
+                        </li>
+                        <li>
+                          <a
+                            href="http://forum.espruino.com/conversations/362761"
+                            target="_blank"
+                            >Espruino 2v09</a
+                          ><span style="float: right">19 Apr</span>
+                        </li>
+                        <li>
+                          <a
+                            href="http://forum.espruino.com/conversations/357840"
+                            target="_blank"
+                            >Christmas Holidays 2020</a
+                          ><span style="float: right">18 Dec</span>
+                        </li>
+                        <li>
+                          <a
+                            href="http://forum.espruino.com/conversations/355513"
+                            target="_blank"
+                            >Espruino App Loader</a
+                          ><span style="float: right">23 Oct</span>
+                        </li>
+                        <li>
+                          <a
+                            href="http://forum.espruino.com/conversations/355172"
+                            target="_blank"
+                            >Special Offers on shop.espruino.com!</a
+                          ><span style="float: right">16 Oct</span>
+                        </li>
+                        <li>
+                          <a
+                            href="http://forum.espruino.com/conversations/355027"
+                            target="_blank"
+                            >Espruino 2v08 - with important Bangle.js
+                            improvements</a
+                          ><span style="float: right">13 Oct</span>
+                        </li>
+                      </ul>
+                      <p></p>
+                    </div>
+                    <p>
+                      Espruino is
+                      <a href="https://github.com/espruino" target="_blank"
+                        >Open Source</a
+                      >. Please support us by
+                      <a href="http://www.espruino.com/Donate" target="_blank"
+                        >donating</a
+                      >
+                      or
+                      <a href="http://www.espruino.com/Order" target="_blank"
+                        >buying an official board</a
+                      >.
+                    </p>
+                    <p style="text-align: right">
+                      <a href="http://twitter.com/Espruino" target="_blank"
+                        ><img
+                          src="img/icon_twitter.png"
+                          width="16"
+                          height="16"
+                          alt="Follow on Twitter"
+                      /></a>
+                      <a
+                        href="http://youtube.com/subscription_center?add_user=espruino"
+                        target="_blank"
+                        ><img
+                          src="img/icon_youtube.png"
+                          width="44"
+                          height="16"
+                          alt="Subscribe on YouTube"
+                      /></a>
+                      <a href="https://www.patreon.com/espruino" target="_blank"
+                        ><img
+                          src="img/icon_patreon.png"
+                          width="45"
+                          height="16"
+                          alt="Support on Patreon"
+                      /></a>
+                    </p>
+                  </div>
+                </div>
+                <div
+                  id="divTesting"
+                  class="Testing"
+                  style="display: none; border: none; height: 100%; width: 100%"
+                >
+                  <table width="100%" height="100%" border="1" bgcolor="#ffd">
+                    <tbody>
+                      <tr>
+                        <th height="45px">
+                          <button
+                            id="loadTesting"
+                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                            role="button"
+                            aria-disabled="false"
+                            title="Load"
+                          >
+                            <span
+                              class="ui-button-icon-primary ui-icon ui-icon-script"
+                            ></span
+                            ><span class="ui-button-text">Load</span>
+                          </button>
+                          <span id="testingName"></span>
+                          <button
+                            id="saveTesting"
+                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                            role="button"
+                            aria-disabled="false"
+                            title="Save"
+                          >
+                            <span
+                              class="ui-button-icon-primary ui-icon ui-icon-disk"
+                            ></span
+                            ><span class="ui-button-text">Save</span>
+                          </button>
+                        </th>
+                        <th>
+                          <button
+                            id="testingExpressionRun"
+                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                            role="button"
+                            aria-disabled="false"
+                            title="Run"
+                          >
+                            <span
+                              class="ui-button-icon-primary ui-icon ui-icon-play"
+                            ></span
+                            ><span class="ui-button-text">Run</span>
+                          </button>
+                          <button
+                            id="testingExpressionStop"
+                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-button-disabled ui-state-disabled"
+                            role="button"
+                            aria-disabled="true"
+                            title="Stop"
+                            disabled=""
+                          >
+                            <span
+                              class="ui-button-icon-primary ui-icon ui-icon-stop"
+                            ></span
+                            ><span class="ui-button-text">Stop</span>
+                          </button>
+                          <input
+                            type="checkbox"
+                            title="log data"
+                            id="testingLog"
+                          />Log
+                          <button
+                            id="openTestingLog"
+                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                            role="button"
+                            aria-disabled="false"
+                            title="Log Testing"
+                          >
+                            <span
+                              class="ui-button-icon-primary ui-icon ui-icon-image"
+                            ></span
+                            ><span class="ui-button-text">Log Testing</span>
+                          </button>
+                        </th>
+                        <th>
+                          <select id="testMode">
+                            <option>Form</option>
+                            <option>Image</option>
+                          </select>
+                          <button id="testProperties">Properties</button>
+                        </th>
+                      </tr>
+                      <tr>
+                        <td colspan="3" id="testingForm">
+                          <table width="100%" height="100%">
+                            <tbody>
+                              <tr height="350">
+                                <th>
+                                  <table
+                                    width="100%"
+                                    height="100%"
+                                    bgcolor="#dfd"
+                                  >
+                                    <tbody>
+                                      <tr>
+                                        <th>
+                                          <button
+                                            id="testingExpressionClear"
+                                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                                            role="button"
+                                            aria-disabled="false"
+                                            title="Drop all expressions"
+                                          >
+                                            <span
+                                              class="ui-button-icon-primary ui-icon ui-icon-minusthick"
+                                            ></span
+                                            ><span class="ui-button-text"
+                                              >Drop all expressions</span
+                                            >
+                                          </button>
+                                        </th>
+                                        <th>
+                                          <button
+                                            id="testingExpressionReset"
+                                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                                            role="button"
+                                            aria-disabled="false"
+                                            title="Reset Chart"
+                                          >
+                                            <span
+                                              class="ui-button-icon-primary ui-icon ui-icon-seek-first"
+                                            ></span
+                                            ><span class="ui-button-text"
+                                              >Reset Chart</span
+                                            >
+                                          </button>
+                                        </th>
+                                      </tr>
+                                      <tr>
+                                        <th valign="top">
+                                          <div id="testingTable">
+                                            <table border="1" id="detailsTable">
+                                              <tbody>
+                                                <tr>
+                                                  <td
+                                                    class="alterDataPoint"
+                                                    title="getTime()
+number"
+                                                  >
+                                                    Time
+                                                  </td>
+                                                  <th>
+                                                    <button
+                                                      class="dropDataPoint ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                                                      i="0"
+                                                      role="button"
+                                                      aria-disabled="false"
+                                                      title="Drop"
+                                                    >
+                                                      <span
+                                                        class="ui-button-icon-primary ui-icon ui-icon-minus"
+                                                      ></span
+                                                      ><span
+                                                        class="ui-button-text"
+                                                        >Drop</span
+                                                      >
+                                                    </button>
+                                                  </th>
+                                                </tr>
+                                                <tr></tr>
+                                                <tr>
+                                                  <td
+                                                    class="alterDataPoint"
+                                                    title="process.memory().free
+number"
+                                                  >
+                                                    FreeMemory
+                                                  </td>
+                                                  <th>
+                                                    <button
+                                                      class="dropDataPoint ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                                                      i="1"
+                                                      role="button"
+                                                      aria-disabled="false"
+                                                      title="Drop"
+                                                    >
+                                                      <span
+                                                        class="ui-button-icon-primary ui-icon ui-icon-minus"
+                                                      ></span
+                                                      ><span
+                                                        class="ui-button-text"
+                                                        >Drop</span
+                                                      >
+                                                    </button>
+                                                  </th>
+                                                </tr>
+                                                <tr></tr>
+                                              </tbody>
+                                            </table>
+                                          </div>
+                                        </th>
+                                        <th valign="top">
+                                          <div id="testingChart">
+                                            <div id="flotlegendholder">
+                                              <table
+                                                style="
+                                                  font-size: smaller;
+                                                  color: #545454;
+                                                "
+                                              >
+                                                <tbody>
+                                                  <tr>
+                                                    <td class="legendColorBox">
+                                                      <div
+                                                        style="
+                                                          border: 1px solid #ccc;
+                                                          padding: 1px;
+                                                        "
+                                                      >
+                                                        <div
+                                                          style="
+                                                            width: 4px;
+                                                            height: 0;
+                                                            border: 5px solid
+                                                              rgb(237, 194, 64);
+                                                            overflow: hidden;
+                                                          "
+                                                        ></div>
+                                                      </div>
+                                                    </td>
+                                                    <td class="legendLabel">
+                                                      Time
+                                                    </td>
+                                                    <td class="legendColorBox">
+                                                      <div
+                                                        style="
+                                                          border: 1px solid #ccc;
+                                                          padding: 1px;
+                                                        "
+                                                      >
+                                                        <div
+                                                          style="
+                                                            width: 4px;
+                                                            height: 0;
+                                                            border: 5px solid
+                                                              rgb(175, 216, 248);
+                                                            overflow: hidden;
+                                                          "
+                                                        ></div>
+                                                      </div>
+                                                    </td>
+                                                    <td class="legendLabel">
+                                                      FreeMemory
+                                                    </td>
+                                                  </tr>
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                            <div
+                                              id="flotplaceholder"
+                                              style="
+                                                width: 380px;
+                                                height: 200px;
+                                                padding: 0px;
+                                                position: relative;
+                                              "
+                                            >
+                                              <canvas
+                                                class="flot-base"
+                                                width="760"
+                                                height="400"
+                                                style="
+                                                  direction: ltr;
+                                                  position: absolute;
+                                                  left: 0px;
+                                                  top: 0px;
+                                                  width: 380px;
+                                                  height: 200px;
+                                                "
+                                              ></canvas>
+                                              <div
+                                                class="flot-text"
+                                                style="
+                                                  position: absolute;
+                                                  inset: 0px;
+                                                  font-size: smaller;
+                                                  color: rgb(84, 84, 84);
+                                                "
+                                              >
+                                                <div
+                                                  class="flot-x-axis flot-x1-axis xAxis x1Axis"
+                                                  style="
+                                                    position: absolute;
+                                                    inset: 0px;
+                                                    display: block;
+                                                  "
+                                                >
+                                                  <div
+                                                    class="flot-tick-label tickLabel"
+                                                    style="
+                                                      position: absolute;
+                                                      max-width: 126px;
+                                                      top: 198px;
+                                                      left: 190px;
+                                                      text-align: center;
+                                                    "
+                                                  >
+                                                    00:00:00
+                                                  </div>
+                                                </div>
+                                                <div
+                                                  class="flot-y-axis flot-y1-axis yAxis y1Axis"
+                                                  style="
+                                                    position: absolute;
+                                                    inset: 0px;
+                                                    display: block;
+                                                  "
+                                                >
+                                                  <div
+                                                    class="flot-tick-label tickLabel"
+                                                    style="
+                                                      position: absolute;
+                                                      top: 192px;
+                                                      left: 2px;
+                                                      text-align: right;
+                                                    "
+                                                  >
+                                                    -1.0
+                                                  </div>
+                                                  <div
+                                                    class="flot-tick-label tickLabel"
+                                                    style="
+                                                      position: absolute;
+                                                      top: 146px;
+                                                      left: 2px;
+                                                      text-align: right;
+                                                    "
+                                                  >
+                                                    -0.5
+                                                  </div>
+                                                  <div
+                                                    class="flot-tick-label tickLabel"
+                                                    style="
+                                                      position: absolute;
+                                                      top: 100px;
+                                                      left: 2px;
+                                                      text-align: right;
+                                                    "
+                                                  >
+                                                    0.0
+                                                  </div>
+                                                  <div
+                                                    class="flot-tick-label tickLabel"
+                                                    style="
+                                                      position: absolute;
+                                                      top: 54px;
+                                                      left: 2px;
+                                                      text-align: right;
+                                                    "
+                                                  >
+                                                    0.5
+                                                  </div>
+                                                  <div
+                                                    class="flot-tick-label tickLabel"
+                                                    style="
+                                                      position: absolute;
+                                                      top: 8px;
+                                                      left: 2px;
+                                                      text-align: right;
+                                                    "
+                                                  >
+                                                    1.0
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <canvas
+                                                class="flot-overlay"
+                                                width="760"
+                                                height="400"
+                                                style="
+                                                  direction: ltr;
+                                                  position: absolute;
+                                                  left: 0px;
+                                                  top: 0px;
+                                                  width: 380px;
+                                                  height: 200px;
+                                                "
+                                              ></canvas>
+                                            </div>
+                                          </div>
+                                          <div
+                                            id="flottertooltip"
+                                            style="
+                                              position: absolute;
+                                              display: none;
+                                              border: 1px solid #fdd;
+                                              padding: 2px;
+                                              background-color: #fee;
+                                              opacity: 0.8;
+                                            "
+                                          ></div>
+                                        </th>
+                                      </tr>
+                                      <tr>
+                                        <th colspan="2" valign="bottom">
+                                          <input
+                                            id="testingLabel"
+                                            size="10"
+                                            maxlength="20"
+                                            value="newExpr"
+                                          />
+                                          <input
+                                            id="testingExpression"
+                                            size="40"
+                                            value="getTime()"
+                                          />
+                                          <select id="testingType">
+                                            <option value="number">
+                                              Number
+                                            </option>
+                                            <option value="string">
+                                              String
+                                            </option>
+                                          </select>
+                                          <button
+                                            id="testingAdd"
+                                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                                            role="button"
+                                            aria-disabled="false"
+                                            title="new Expression"
+                                          >
+                                            <span
+                                              class="ui-button-icon-primary ui-icon ui-icon-circle-plus"
+                                            ></span
+                                            ><span class="ui-button-text"
+                                              >new Expression</span
+                                            >
+                                          </button>
+                                        </th>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </th>
+                              </tr>
+                              <tr>
+                                <th>
+                                  <table
+                                    width="100%"
+                                    height="100%"
+                                    bgcolor="#ccf"
+                                  >
+                                    <tbody>
+                                      <tr>
+                                        <th colspan="2">
+                                          <button
+                                            id="testingSetClear"
+                                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                                            role="button"
+                                            aria-disabled="false"
+                                            title="Clear"
+                                          >
+                                            <span
+                                              class="ui-button-icon-primary ui-icon ui-icon-minusthick"
+                                            ></span
+                                            ><span class="ui-button-text"
+                                              >Clear</span
+                                            >
+                                          </button>
+                                        </th>
+                                      </tr>
+                                      <tr>
+                                        <th valign="top">
+                                          <div id="testingAction">
+                                            <table
+                                              boder="1"
+                                              id="actionTable"
+                                            ></table>
+                                          </div>
+                                        </th>
+                                      </tr>
+                                      <tr>
+                                        <th valign="bottom">
+                                          <input
+                                            id="actionName"
+                                            size="10"
+                                            maxlength="20"
+                                            value="newAction"
+                                          />
+                                          <input
+                                            id="actionExpression"
+                                            size="20"
+                                            value="myVariable"
+                                          />
+                                          <select id="actionType">
+                                            <option value="number">
+                                              Number
+                                            </option>
+                                            <option value="boolean">
+                                              Boolean
+                                            </option>
+                                            <option value="string">
+                                              String
+                                            </option>
+                                            <option value="command">
+                                              Command
+                                            </option>
+                                          </select>
+                                          <button
+                                            id="testingAddAction"
+                                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only"
+                                            role="button"
+                                            aria-disabled="false"
+                                            title="new Action"
+                                          >
+                                            <span
+                                              class="ui-button-icon-primary ui-icon ui-icon-circle-plus"
+                                            ></span
+                                            ><span class="ui-button-text"
+                                              >new Action</span
+                                            >
+                                          </button>
+                                        </th>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </th>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div
+                  id="divTesting"
+                  class="Testing"
+                  style="display: none; border: none; height: 100%; width: 100%"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="splitster__bar ui-draggable"
+            style="width: 0px; height: 0px; top: 0px; left: 756px"
+          ></div>
+
+          <div
+            class="split-pane__right splitster__pane"
+            style="width: 756px; height: 100%; top: 0px; left: 756px"
+          >
+            <div class="editor editor--code">
+              <div
+                class="sidebar editor__sidebar ui-draggable splitster__draggable"
+              >
+                <div class="v-split">
+                  <div
+                    class="v-split__top sidebar__buttons sidebar__buttons--top"
+                  >
+                    <a
+                      id="icon-openFile"
+                      class="icon-folder-open lrg icon--hasinfo"
+                      title="Open File"
+                      data-icon-order="100"
+                      ><span class="icon__info">open</span
+                      ><span class="icon__more">▼</span></a
+                    ><a
+                      id="icon-saveFile"
+                      class="icon-save lrg"
+                      title="Save File"
+                      data-icon-order="200"
+                    ></a
+                    ><a
+                      id="icon-storage"
+                      class="icon-storage lrg"
+                      title="Access files in device's storage"
+                      data-icon-order="300"
+                    ></a
+                    ><a
+                      id="icon-deploy"
+                      class="icon-deploy lrg icon--hasinfo"
+                      title="Send to Espruino"
+                      data-icon-order="400"
+                      ><span class="icon__info">RAM</span
+                      ><span class="icon__more">▼</span></a
+                    >
+                  </div>
+                  <div
+                    class="v-split__bottom sidebar__buttons sidebar__buttons--bottom"
+                  >
+                    <a
+                      id="icon-code"
+                      class="icon-code lrg"
+                      title="Switch between Code and Graphical Designer"
+                      data-icon-order="0"
+                    ></a>
+                  </div>
+                </div>
+              </div>
+              <div class="canvas editor__canvas">
+                <div id="divcode" style="width: 100%; height: 100%">
+                  <textarea
+                    id="code"
+                    name="code"
+                    style="display: none"
+                  ></textarea>
+                  <div
+                    class="CodeMirror cm-s-default CodeMirror-wrap"
+                    style="font-size: 12px"
+                  >
+                    <div
+                      style="
+                        overflow: hidden;
+                        position: relative;
+                        width: 3px;
+                        height: 0px;
+                        top: 4px;
+                        left: 58px;
+                      "
+                    >
+                      <textarea
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        tabindex="0"
+                        style="
+                          position: absolute;
+                          bottom: -1em;
+                          padding: 0px;
+                          width: 1000px;
+                          height: 1em;
+                          outline: none;
+                        "
+                      ></textarea>
+                    </div>
+                    <div
+                      class="CodeMirror-vscrollbar"
+                      tabindex="-1"
+                      cm-not-content="true"
+                    >
+                      <div style="min-width: 1px; height: 0px"></div>
+                    </div>
+                    <div
+                      class="CodeMirror-hscrollbar"
+                      tabindex="-1"
+                      cm-not-content="true"
+                    >
+                      <div
+                        style="height: 100%; min-height: 1px; width: 0px"
+                      ></div>
+                    </div>
+                    <div
+                      class="CodeMirror-scrollbar-filler"
+                      cm-not-content="true"
+                    ></div>
+                    <div
+                      class="CodeMirror-gutter-filler"
+                      cm-not-content="true"
+                    ></div>
+                    <div class="CodeMirror-scroll" tabindex="-1">
+                      <div
+                        class="CodeMirror-sizer"
+                        style="
+                          margin-left: 54px;
+                          margin-bottom: -15px;
+                          border-right-width: 15px;
+                          min-height: 386px;
+                          padding-right: 0px;
+                          padding-bottom: 0px;
+                        "
+                      >
+                        <div style="position: relative; top: 0px">
+                          <div class="CodeMirror-lines" role="presentation">
+                            <div
+                              role="presentation"
+                              style="position: relative; outline: none"
+                            >
+                              <div class="CodeMirror-measure">
+                                <pre><span>xxxxxxxxxx</span></pre>
+                                <div
+                                  class="CodeMirror-linenumber CodeMirror-gutter-elt"
+                                >
+                                  <div>1</div>
+                                </div>
+                              </div>
+                              <div class="CodeMirror-measure"></div>
+                              <div style="position: relative; z-index: 1"></div>
+                              <div class="CodeMirror-cursors">
+                                <div
+                                  class="CodeMirror-cursor"
+                                  style="left: 4px; top: 0px; height: 14px"
+                                >
+                                  &nbsp;
+                                </div>
+                              </div>
+                              <div class="CodeMirror-code" role="presentation">
+                                <div style="position: relative">
+                                  <div
+                                    class="CodeMirror-gutter-wrapper"
+                                    style="left: -54px"
+                                  >
+                                    <div
+                                      class="CodeMirror-linenumber CodeMirror-gutter-elt"
+                                      style="left: 0px; width: 21px"
+                                    >
+                                      1
+                                    </div>
+                                    <div
+                                      class="CodeMirror-gutter-elt"
+                                      style="left: 37px; width: 16px"
+                                    >
+                                      <div
+                                        class="CodeMirror-lint-marker-warning"
+                                      >
+                                        <div
+                                          class="CodeMirror-lint-marker-multiple"
+                                        ></div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <pre
+                                    class="CodeMirror-line"
+                                    role="presentation"
+                                  ><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">var</span> <span class="cm-def">n</span><span class="cm-operator">=</span><span class="cm-number">12e4</span>;<span class="cm-keyword">function</span> <span class="cm-def">e</span>(<span class="cm-def">e</span>,<span class="cm-def">t</span>){<span class="cm-variable">global</span>.<span class="cm-property">idleTimeout</span><span class="cm-operator">=</span><span class="cm-atom">null</span>,<span class="cm-variable">global</span>.<span class="cm-property">throwawayMovementEvent</span><span class="cm-operator">=!</span><span class="cm-number">0</span>,<span class="cm-variable">Puck</span>.<span class="cm-property">on</span>(<span class="cm-string">"accel"</span>,<span class="cm-keyword">function</span>(){<span class="cm-keyword">if</span>(<span class="cm-variable">global</span>.<span class="cm-property">idleTimeout</span>)<span class="cm-variable">clearTimeout</span>(<span class="cm-variable">global</span>.<span class="cm-property">idleTimeout</span>);<span class="cm-keyword">else</span>{<span class="cm-keyword">if</span>(<span class="cm-variable">global</span>.<span class="cm-property">throwawayMovementEvent</span>)<span class="cm-keyword">return</span> <span class="cm-keyword">void</span>(<span class="cm-variable">global</span>.<span class="cm-property">throwawayMovementEvent</span><span class="cm-operator">=!</span><span class="cm-number">1</span>);<span class="cm-variable-2">e</span>()<span class=" CodeMirror-lint-mark-warning">}</span><span class="cm-variable">global</span>.<span class="cm-property">idleTimeout</span><span class="cm-operator">=</span><span class="cm-variable">setTimeout</span>(<span class="cm-keyword">function</span>(){<span class="cm-variable">global</span>.<span class="cm-property">idleTimeout</span><span class="cm-operator">=</span><span class="cm-atom">null</span>,<span class="cm-variable-2">t</span>(<span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">},</span><span class="cm-variable">global</span>.<span class="cm-property">throwawayMovementEvent</span><span class="cm-operator">?</span><span class="cm-number">3e3</span>:<span class="cm-variable">n</span>)<span class=" CodeMirror-lint-mark-warning">}</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">}</span><span class="cm-variable">require</span>(<span class="cm-string">"puckjsv2-accel-movement"</span>).<span class="cm-property">on</span>({<span class="cm-property">threshold</span>:<span class="cm-number">10</span>});<span class="cm-keyword">var</span> <span class="cm-def">i</span><span class="cm-operator">=</span><span class="cm-number">2500</span>,<span class="cm-def">o</span><span class="cm-operator">=</span><span class="cm-atom">null</span>,<span class="cm-def">u</span><span class="cm-operator">=!</span><span class="cm-number">1</span>;<span class="cm-keyword">function</span> <span class="cm-def">t</span>(<span class="cm-def">e</span>,<span class="cm-def">t</span>){<span class="cm-variable">setWatch</span>(<span class="cm-keyword">function</span>(){<span class="cm-variable">clearTimeout</span>(<span class="cm-variable">o</span>),<span class="cm-variable">u</span><span class="cm-operator">?</span><span class="cm-variable">u</span><span class="cm-operator">=!</span><span class="cm-number">1</span>:<span class="cm-variable-2">e</span>(<span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">},</span><span class="cm-variable">BTN</span>,{<span class="cm-property">edge</span>:<span class="cm-string">"falling"</span>,<span class="cm-property">repeat</span>:<span class="cm-operator">!</span><span class="cm-number">0</span>,<span class="cm-property">debounce</span>:<span class="cm-number">10</span>}),<span class="cm-variable">setWatch</span>(<span class="cm-keyword">function</span>(){<span class="cm-variable">o</span><span class="cm-operator">=</span><span class="cm-variable">setTimeout</span>(<span class="cm-keyword">function</span>(){<span class="cm-variable-2">t</span>(),<span class="cm-variable">u</span><span class="cm-operator">=!</span><span class="cm-number CodeMirror-lint-mark-warning">0</span><span class=" CodeMirror-lint-mark-warning">},</span><span class="cm-variable">i</span>)<span class=" CodeMirror-lint-mark-warning">},</span><span class="cm-variable">BTN</span>,{<span class="cm-property">edge</span>:<span class="cm-string">"rising"</span>,<span class="cm-property">repeat</span>:<span class="cm-operator">!</span><span class="cm-number">0</span>,<span class="cm-property">debounce</span>:<span class="cm-number">10</span>}<span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">}</span><span class="cm-keyword">function</span> <span class="cm-def">a</span>(<span class="cm-def">e</span>,<span class="cm-def">t</span>,<span class="cm-def">n</span>){<span class="cm-keyword">for</span>(<span class="cm-keyword">var</span> <span class="cm-def">i</span><span class="cm-operator">=</span><span class="cm-number">0</span>;<span class="cm-variable-2">i</span><span class="cm-operator">&lt;</span><span class="cm-variable-2">t</span>;<span class="cm-variable-2">i</span><span class="cm-operator">++</span>)<span class="cm-variable">setTimeout</span>(<span class="cm-keyword CodeMirror-lint-mark-warning">function</span>(){<span class="cm-variable-2">e</span>.<span class="cm-property">write</span>(<span class="cm-operator">!</span><span class="cm-number">0</span>)<span class=" CodeMirror-lint-mark-warning">},</span><span class="cm-number">2</span><span class="cm-operator">*</span><span class="cm-variable-2">n</span><span class="cm-operator">*</span><span class="cm-variable-2">i</span><span class="cm-operator">+</span><span class="cm-number">1</span>),<span class="cm-variable">setTimeout</span>(<span class="cm-keyword CodeMirror-lint-mark-warning">function</span>(){<span class="cm-variable-2">e</span>.<span class="cm-property">write</span>(<span class="cm-operator">!</span><span class="cm-number">1</span>)<span class=" CodeMirror-lint-mark-warning">},</span><span class="cm-number">2</span><span class="cm-operator">*</span><span class="cm-variable-2">n</span><span class="cm-operator">*</span><span class="cm-variable-2">i</span><span class="cm-operator">+</span><span class="cm-variable-2">n</span><span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">}</span><span class="cm-keyword">var</span> <span class="cm-def">c</span><span class="cm-operator">=</span>{<span class="cm-property">activeMode</span>:{<span class="cm-property">advertisingData</span>:[<span class="cm-number">3</span>,<span class="cm-number">3</span>,<span class="cm-number">221</span>,<span class="cm-number">188</span>],<span class="cm-property">fourBit</span>:<span class="cm-string">"bcdd"</span>,<span class="cm-property">sixteenBit</span>:<span class="cm-string">"0000bcdd-0000-1000-8000-00805f9b34fb"</span>},<span class="cm-property">impulseMode</span>:{<span class="cm-property">advertisingData</span>:[<span class="cm-number">3</span>,<span class="cm-number">3</span>,<span class="cm-number">222</span>,<span class="cm-number">188</span>],<span class="cm-property">fourBit</span>:<span class="cm-string">"bcde"</span>,<span class="cm-property">sixteenBit</span>:<span class="cm-string">"0000bcde-0000-1000-8000-00805f9b34fb"</span>},<span class="cm-property">rescueMode</span>:{<span class="cm-property">advertisingData</span>:[<span class="cm-number">3</span>,<span class="cm-number">3</span>,<span class="cm-number">223</span>,<span class="cm-number">188</span>],<span class="cm-property">fourBit</span>:<span class="cm-string">"bcdf"</span>,<span class="cm-property">sixteenBit</span>:<span class="cm-string">"0000bcdf-0000-1000-8000-00805f9b34fb"</span>}};<span class="cm-keyword">function</span> <span class="cm-def">l</span>(){<span class="cm-variable">NRF</span>.<span class="cm-property">setAdvertising</span>({},{<span class="cm-property">name</span>:<span class="cm-string">"Impulse"</span>})<span class=" CodeMirror-lint-mark-warning">}</span><span class="cm-keyword">function</span> <span class="cm-def">r</span>(<span class="cm-def">e</span>){<span class="cm-variable-2">e</span><span class="cm-operator">=</span><span class="cm-variable">f</span>([<span class="cm-variable">c</span>[<span class="cm-variable-2">e</span>].<span class="cm-property">advertisingData</span>]);<span class="cm-variable">NRF</span>.<span class="cm-property">setAdvertising</span>(<span class="cm-variable-2">e</span>),<span class="cm-variable">NRF</span>.<span class="cm-property">wake</span>(<span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">}</span><span class="cm-keyword">function</span> <span class="cm-def">f</span>(<span class="cm-def">e</span>){<span class="cm-keyword">var</span> <span class="cm-def">t</span><span class="cm-operator">=</span>[<span class="cm-number">2</span>,<span class="cm-number">1</span>,<span class="cm-number">6</span>];<span class="cm-keyword">return</span> <span class="cm-variable-2">e</span>.<span class="cm-property">forEach</span>(<span class="cm-keyword">function</span>(<span class="cm-def">e</span>){<span class="cm-keyword">return</span> <span class="cm-variable-2">e</span>.<span class="cm-property">forEach</span>(<span class="cm-keyword">function</span>(<span class="cm-def">e</span>){<span class="cm-keyword">return</span> <span class="cm-variable-2">t</span>.<span class="cm-property">push</span>(<span class="cm-variable-2">e</span>)<span class=" CodeMirror-lint-mark-warning">})</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">}),[</span><span class="cm-variable-2">t</span>]<span class=" CodeMirror-lint-mark-warning">}</span><span class="cm-variable">global</span>.<span class="cm-property">debugMode</span><span class="cm-operator">=!</span><span class="cm-number">1</span>;<span class="cm-keyword">var</span> <span class="cm-def">d</span><span class="cm-operator">=</span><span class="cm-string">"idle"</span>;<span class="cm-keyword">function</span> <span class="cm-def">s</span>(){<span class="cm-variable">d</span><span class="cm-operator">=</span><span class="cm-string">"active"</span>,<span class="cm-variable">r</span>(<span class="cm-string">"activeMode"</span>),<span class="cm-variable">a</span>(<span class="cm-variable">LED3</span>,<span class="cm-number">6</span>,<span class="cm-number">20</span><span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">}</span><span class="cm-keyword">function</span> <span class="cm-def">v</span>(){<span class="cm-variable">d</span><span class="cm-operator">=</span><span class="cm-string">"idle"</span>,<span class="cm-variable">NRF</span>.<span class="cm-property">sleep</span>(<span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">}</span><span class="cm-keyword">function</span> <span class="cm-def">b</span>(){<span class="cm-variable">d</span><span class="cm-operator">=</span><span class="cm-string">"impulse"</span>,<span class="cm-variable">r</span>(<span class="cm-string">"impulseMode"</span>),<span class="cm-variable">a</span>(<span class="cm-variable">LED2</span>,<span class="cm-number">6</span>,<span class="cm-number">20</span><span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">}</span><span class="cm-keyword">function</span> <span class="cm-def">m</span>(){<span class="cm-variable">d</span><span class="cm-operator">=</span><span class="cm-string">"rescue"</span>,<span class="cm-variable">r</span>(<span class="cm-string">"rescueMode"</span>),<span class="cm-variable">a</span>(<span class="cm-variable">LED1</span>,<span class="cm-number">12</span>,<span class="cm-number">20</span><span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">}</span><span class="cm-variable">l</span>();<span class="cm-keyword">var</span> <span class="cm-def">g</span><span class="cm-operator">=</span><span class="cm-keyword">function</span>(){<span class="cm-variable">a</span>(<span class="cm-variable">LED2</span>,<span class="cm-number">6</span>,<span class="cm-number">20</span>),<span class="cm-string">"idle"</span><span class="cm-operator">===</span><span class="cm-variable">d</span><span class="cm-operator">&amp;&amp;</span><span class="cm-variable">s</span>(<span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">},</span><span class="cm-def">T</span><span class="cm-operator">=</span><span class="cm-keyword">function</span>(){<span class="cm-string">"active"</span><span class="cm-operator">===</span><span class="cm-variable">d</span><span class="cm-operator">&amp;&amp;</span><span class="cm-variable">v</span>(<span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">};</span><span class="cm-keyword">function</span> <span class="cm-def">h</span>(){}<span class="cm-keyword">function</span> <span class="cm-def">w</span>(){<span class="cm-variable">d</span><span class="cm-operator">=</span><span class="cm-string">"idle"</span>,<span class="cm-variable">NRF</span>.<span class="cm-property">sleep</span>(<span class=" CodeMirror-lint-mark-warning">)</span><span class=" CodeMirror-lint-mark-warning CodeMirror-lint-mark-warning">}</span><span class="cm-variable">e</span>(<span class="cm-variable">g</span>,<span class="cm-variable">T</span>),<span class="cm-variable-2">t</span>(<span class="cm-variable">b</span>,<span class="cm-variable">m</span>),<span class="cm-variable">NRF</span>.<span class="cm-property">on</span>(<span class="cm-string">"disconnect"</span>,<span class="cm-variable">w</span>),<span class="cm-variable">NRF</span>.<span class="cm-property">on</span>(<span class="cm-string">"connect"</span>,<span class="cm-variable">h</span><span class=" CodeMirror-lint-mark-warning">)</span>;</span></pre>
+                                </div>
+                                <div style="position: relative">
+                                  <div
+                                    class="CodeMirror-gutter-wrapper"
+                                    style="left: -54px"
+                                  >
+                                    <div
+                                      class="CodeMirror-linenumber CodeMirror-gutter-elt"
+                                      style="left: 0px; width: 21px"
+                                    >
+                                      2
+                                    </div>
+                                  </div>
+                                  <pre
+                                    class="CodeMirror-line"
+                                    role="presentation"
+                                  ><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">&ZeroWidthSpace;</span></span></pre>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          position: absolute;
+                          height: 15px;
+                          width: 1px;
+                          border-bottom: 0px solid transparent;
+                          top: 386px;
+                        "
+                      ></div>
+                      <div
+                        class="CodeMirror-gutters"
+                        style="height: 401px; left: 0px"
+                      >
+                        <div
+                          class="CodeMirror-gutter CodeMirror-linenumbers"
+                          style="width: 29px"
+                        ></div>
+                        <div
+                          class="CodeMirror-gutter CodeMirror-foldgutter"
+                        ></div>
+                        <div
+                          class="CodeMirror-gutter CodeMirror-lint-markers"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <iframe
+                  id="divblockly"
+                  class="blocky"
+                  style="display: none; border: none"
+                  src="blockly/blockly.html?lang=en&amp;Enable=%7Cbluetooth%7Crobot%7C"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status">
+          <div class="h-split">
+            <div class="h-split__left status__left">
+              <h5 class="status__message">Ready...</h5>
+            </div>
+            <div class="h-split__right status__right">
+              <h5 class="status__port"></h5>
+              <div class="status__progress" style="display: none">
+                <div class="status__progress-bar"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script src="js/espruino.js"></script>
+    </div>
+    <textarea
+      id="terminalfocus"
+      class="terminal__focus"
+      rows="1"
+      cols="1"
+    ></textarea>
+    <div
+      id="flottooltip"
+      style="
+        position: absolute;
+        display: none;
+        border: 1px solid rgb(255, 221, 221);
+        padding: 2px;
+        background-color: rgb(255, 238, 238);
+        opacity: 0.8;
+      "
+    ></div>
+</html>
