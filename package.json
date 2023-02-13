@@ -1,4 +1,5 @@
 {
+  "version": "0.4",
   "name": "impulse-button",
   "scripts": {
     "build": "rollup -c",
