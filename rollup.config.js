@@ -1,7 +1,9 @@
+import consts from "rollup-plugin-consts";
 import resolve from "rollup-plugin-node-resolve";
 import typescript from "rollup-plugin-typescript";
 import { uglify } from "rollup-plugin-uglify";
 import { minify } from "uglify-js";
+import appConfig from "./package.json";
 import tsconfig from "./tsconfig.json";
 
 export default [
@@ -13,7 +15,9 @@ export default [
     },
     plugins: [
       resolve(),
-      // babel({ babelHelpers: "bundled" }),
+      consts({
+        version: appConfig.version,
+      }),
       typescript({
         ...tsconfig.compilerOptions,
         include: "**/*.{js,ts}",
