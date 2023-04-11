@@ -11,7 +11,7 @@ export default [
     input: "src/index.ts",
     output: {
       name: "Impulse",
-      file: "dist/impulse.js",
+      file: "dist/impulse.js.txt",
     },
     plugins: [
       resolve(),
