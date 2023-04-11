@@ -305,13 +305,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/espruino@npm:^1.94.7":
-  version: 1.94.7
-  resolution: "@types/espruino@npm:1.94.7"
-  checksum: 27900e4fde35b48a2973e8177bfc44b655d8ab6cc4ff3633fcb7e8c973f4868bd9e55568debacc8286d90f48ff53810c6aa22298e966d791eeb545948ec5ecee
-  languageName: node
-  linkType: hard
-
 "@types/estree@npm:*, @types/estree@npm:^1.0.0":
   version: 1.0.0
   resolution: "@types/estree@npm:1.0.0"
@@ -477,15 +470,16 @@ __metadata:
   dependencies:
     "@babel/plugin-proposal-class-properties": ^7.18.6
     "@rollup/plugin-babel": ^6.0.3
-    "@types/espruino": ^1.94.7
     redux: ^4.2.0
     rollup: ^1.17.0
+    rollup-plugin-consts: ^1.1.0
     rollup-plugin-node-resolve: ^5.2.0
     rollup-plugin-typescript: ^1.0.1
     rollup-plugin-uglify: ^6.0.2
     ts-node: ^8.3.0
     tslib: ^1.10.0
     typescript: ^3.5.3
+    uglify-js: ^3.17.4
   languageName: unknown
   linkType: soft
 
@@ -605,6 +599,15 @@ __metadata:
   bin:
     resolve: bin/resolve
   checksum: 5656f4d0bedcf8eb52685c1abdf8fbe73a1603bb1160a24d716e27a57f6cecbe2432ff9c89c2bd57542c3a7b9d14b1882b73bfe2e9d7849c9a4c0b8b39f02b8b
+  languageName: node
+  linkType: hard
+
+"rollup-plugin-consts@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "rollup-plugin-consts@npm:1.1.0"
+  peerDependencies:
+    rollup: ">=1.15.0 <3"
+  checksum: d504362ec72ca1ffa0d6d3e691808fb69c896ac891318d5b6e5fbb0097bc61c660466852c8c448370c93678ae0caf2d01be3259ee3be1c732eacfd67bab05b72
   languageName: node
   linkType: hard
 
@@ -775,7 +778,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uglify-js@npm:^3.4.9":
+"uglify-js@npm:^3.17.4, uglify-js@npm:^3.4.9":
   version: 3.17.4
   resolution: "uglify-js@npm:3.17.4"
   bin:
