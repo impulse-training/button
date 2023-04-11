@@ -1,5 +1,5 @@
 import version from "consts:version";
-import { initializeButton } from "./utils/button";
+import { initializeAccelerometer } from "./utils/acceleration";
 import { blink } from "./utils/leds";
 import { setDeviceName } from "./utils/nrf";
 
@@ -31,11 +31,25 @@ function resetServices() {
       0xbcde: {
         // Short press
         0xabcd: {
-          maxLen: 20,
+          maxLen: 50,
           readable: true,
           notify: true,
+          value: null,
         },
-
+        // Motion tracking control
+        0xabce: {
+          maxLen: 50,
+          writable: true,
+          value: null,
+          onWrite: listenForMotion,
+        },
+        // Motion tracking indication
+        0xabcf: {
+          maxLen: 50,
+          readable: true,
+          notify: true,
+          value: null,
+        },
         // VERSION
         0xeeee: {
           maxLen: 20,
@@ -48,7 +62,7 @@ function resetServices() {
         // Battery Service
         0x2a19: {
           readable: true,
-          notify: true,
+          broadcast: true,
           value: [Puck.getBatteryPercentage()],
         },
       },
@@ -63,57 +77,69 @@ function resetServices() {
 }
 
 function broadcastButtonPress(pressCount: number) {
+  blink(LED3, pressCount, 150);
   if (!isConnected) return blink(LED1, 3, 1000);
-  blink(LED3, pressCount, 20);
-  NRF.updateServices({
-    0xbcde: {
-      0xabcd: {
-        value: pressCount.toString(),
-        readable: true,
-        notify: true,
-      },
-    },
-    0x180f: {
-      0x2a19: {
-        value: [Puck.getBatteryPercentage()],
-        readable: true,
-        notify: true,
-      },
-    },
-  });
 
-  // Because the app uses what is essentially a change listener, we need to "clear" this service
-  // channel by resetting it to 0. This is a little imprecise - instead, we could do something like
-  // broadcast a serialised message that includes the press count and a timestamp, but this is ok
-  // for now.
+  // We need to move this off the main thread due to an apparent issue with global variables
   setTimeout(() => {
     NRF.updateServices({
       0xbcde: {
         0xabcd: {
-          value: "0",
+          // We broadcast the presscount and timestamp using the keys 'p' and 't' respectively.
+          value: JSON.stringify({
+            p: pressCount,
+            t: Math.round(new Date().getTime() / 1000),
+          }),
+          readable: true,
+          notify: true,
+        },
+        0xabce: {
+          maxLen: 50,
+          readable: false,
+          writable: true,
+          value: null,
+          onWrite: listenForMotion,
+        },
+        0xabcf: {
+          value: null,
+          readable: true,
+          notify: true,
+        },
+      },
+      0x180f: {
+        0x2a19: {
+          value: [Puck.getBatteryPercentage()],
+          readable: true,
           notify: true,
         },
       },
     });
-  }, 2000);
+  }, 100);
 }
 
-function broadcastButtonLongPress() {
-  if (!isConnected) return blink(LED1, 3, 1000);
-  blink(LED3, 1, 1000);
+function listenForMotion() {
+  initializeAccelerometer(broadcastMotion);
+}
 
-  NRF.updateServices({
-    0xbcde: {
-      0xabcd: {
-        value: "long",
-        notify: true,
+function broadcastMotion() {
+  setTimeout(() => {
+    NRF.updateServices({
+      0xbcde: {
+        0xabcf: {
+          // We broadcast the presscount and timestamp using the keys 'p' and 't' respectively.
+          value: JSON.stringify({
+            t: Math.round(new Date().getTime() / 1000),
+          }),
+          readable: true,
+          notify: true,
+        },
       },
-    },
-  });
+    });
+  }, 100);
 }
 
 resetServices();
 
-NRF.setConnectionInterval(80);
+NRF.setConnectionInterval(7);
 NRF.on("disconnect", handleDisconnect);
 NRF.on("connect", handleConnect);
