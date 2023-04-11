@@ -3,6 +3,14 @@ import { initializeAccelerometer } from "./utils/acceleration";
 import { blink } from "./utils/leds";
 import { setDeviceName } from "./utils/nrf";
 
+const LONG_PRESS_DELAY = 2500;
+const SINGLE_PRESS_DELAY = 500;
+
+var singlePressCounter = 0;
+var singlePressTimeout: NodeJS.Timeout | null = null;
+var longPressTimeout: NodeJS.Timeout | null = null;
+var didLongPress = false;
+
 declare global {
   var isConnected: boolean;
 }
@@ -11,7 +19,42 @@ var isConnected = false;
 
 setDeviceName();
 
-initializeButton(broadcastButtonPress, broadcastButtonLongPress);
+function handleButtonDown() {
+  longPressTimeout = setTimeout(function () {
+    broadcastButtonPress(1, true);
+    didLongPress = true;
+  }, LONG_PRESS_DELAY);
+}
+
+function handleButtonUp() {
+  clearTimeout(longPressTimeout);
+
+  if (didLongPress) {
+    // We've already handled the long press using the NodeJS timeout callback. Therefore, we
+    // simply unset this flag and return.
+    didLongPress = false;
+  } else {
+    singlePressCounter += 1;
+    if (singlePressTimeout) clearTimeout(singlePressTimeout);
+    singlePressTimeout = setTimeout(function () {
+      broadcastButtonPress(Number(singlePressCounter.toString()));
+      singlePressCounter = 0;
+      singlePressTimeout = null;
+    }, SINGLE_PRESS_DELAY);
+  }
+}
+
+setWatch(handleButtonUp, BTN, {
+  edge: "falling",
+  repeat: true,
+  debounce: 10,
+});
+
+setWatch(handleButtonDown, BTN, {
+  edge: "rising",
+  repeat: true,
+  debounce: 10,
+});
 
 function handleDisconnect() {
   LED3.write(false);
@@ -76,7 +119,7 @@ function resetServices() {
   );
 }
 
-function broadcastButtonPress(pressCount: number) {
+function broadcastButtonPress(pressCount: number, isLongPress = false) {
   blink(LED3, pressCount, 150);
   if (!isConnected) return blink(LED1, 3, 1000);
 
@@ -88,6 +131,7 @@ function broadcastButtonPress(pressCount: number) {
           // We broadcast the presscount and timestamp using the keys 'p' and 't' respectively.
           value: JSON.stringify({
             p: pressCount,
+            l: isLongPress,
             t: Math.round(new Date().getTime() / 1000),
           }),
           readable: true,
