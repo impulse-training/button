@@ -29,8 +29,8 @@ export function initializeButton(
       if (singlePressTimeout) clearTimeout(singlePressTimeout);
       singlePressTimeout = setTimeout(function () {
         onSinglePress(singlePressCounter);
-        singlePressTimeout = null;
         singlePressCounter = 0;
+        singlePressTimeout = null;
       }, SINGLE_PRESS_DELAY);
     }
   }
