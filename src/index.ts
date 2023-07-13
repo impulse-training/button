@@ -77,13 +77,11 @@ function resetServices() {
           maxLen: 50,
           readable: true,
           notify: true,
-          value: null,
         },
         // Motion tracking control
         0xabce: {
           maxLen: 50,
           writable: true,
-          value: null,
           onWrite: listenForMotion,
         },
         // Motion tracking indication
@@ -91,7 +89,6 @@ function resetServices() {
           maxLen: 50,
           readable: true,
           notify: true,
-          value: null,
         },
         // VERSION
         0xeeee: {
@@ -131,8 +128,9 @@ function broadcastButtonPress(pressCount: number, isLongPress = false) {
           // We broadcast the presscount and timestamp using the keys 'p' and 't' respectively.
           value: JSON.stringify({
             p: pressCount,
-            l: isLongPress,
-            t: Math.round(new Date().getTime() / 1000),
+            t: Math.round(new Date().getTime() / 1000)
+              .toString()
+              .slice(-6),
           }),
           readable: true,
           notify: true,
@@ -162,6 +160,7 @@ function broadcastButtonPress(pressCount: number, isLongPress = false) {
 }
 
 function listenForMotion() {
+  blink(LED2, 3, 20);
   initializeAccelerometer(broadcastMotion);
 }
 
@@ -170,7 +169,7 @@ function broadcastMotion() {
     NRF.updateServices({
       0xbcde: {
         0xabcf: {
-          // We broadcast the presscount and timestamp using the keys 'p' and 't' respectively.
+          // We broadcast the timestamp using the key 't'
           value: JSON.stringify({
             t: Math.round(new Date().getTime() / 1000),
           }),
